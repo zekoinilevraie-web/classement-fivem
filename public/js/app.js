@@ -44,26 +44,22 @@ async function initSession() {
   }
 
   let user = API.getStoredUser();
-  if (!user) {
-    // Attempt auto-login as Fondateur by default for effortless first run
+  if (user && user.id) {
     try {
-      user = await API.login('fondateur', 'admin');
+      const fullUser = await API.getMe();
+      State.currentUser = fullUser || user;
     } catch {
-      // If login fails, prompt modal
-      openModal('modalLogin');
-      return;
+      State.currentUser = user;
     }
+  } else {
+    State.currentUser = null;
   }
 
-  State.currentUser = user;
   updateUserUI();
 }
 
 function updateUserUI() {
   const user = State.currentUser;
-  if (!user) return;
-
-  const isFounder = user.role === 'fondateur';
   const displayName = document.getElementById('userDisplayName');
   const roleBadge = document.getElementById('userRoleBadge');
   const dropdownUsername = document.getElementById('dropdownUsername');
@@ -74,6 +70,26 @@ function updateUserUI() {
   const discordNotice = document.getElementById('discordStatusBanner');
   const discordRoleNotice = document.getElementById('discordRoleNotice');
   const userAvatar = document.getElementById('userAvatar');
+
+  // If visitor is not logged in: Guest mode with restricted access
+  if (!user) {
+    if (displayName) displayName.textContent = 'Visiteur';
+    if (dropdownUsername) dropdownUsername.textContent = 'Non connecté';
+    if (roleBadge) {
+      roleBadge.textContent = 'Citoyen (Lecture Seule)';
+      roleBadge.className = 'user-role-badge text-muted';
+    }
+    if (dropdownAccess) dropdownAccess.textContent = 'Accès : Classement Public';
+    if (userAvatar) userAvatar.innerHTML = '👤';
+    if (adminBtn) adminBtn.classList.add('hidden');
+    if (founderSimBar) founderSimBar.classList.add('hidden');
+    if (isolationNotice) isolationNotice.classList.add('hidden');
+    if (discordNotice) discordNotice.classList.add('hidden');
+    State.selectedCategory = 'all';
+    return;
+  }
+
+  const isFounder = user.role === 'fondateur';
 
   if (displayName) displayName.textContent = user.displayName;
   if (dropdownUsername) dropdownUsername.textContent = `@${user.username}`;
@@ -1008,6 +1024,11 @@ function setupGlobalEventListeners() {
 
   // Action Header Buttons
   document.getElementById('btnNewReport')?.addEventListener('click', () => {
+    if (!State.currentUser || State.currentUser.role === 'guest') {
+      Components.showToast('Veuillez vous connecter avec Discord pour déposer votre bilan.', 'gold');
+      openModal('modalLogin');
+      return;
+    }
     openEditReportModal();
   });
   document.getElementById('btnAdminPanel')?.addEventListener('click', () => {

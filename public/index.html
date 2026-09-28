@@ -895,7 +895,6 @@
                     <option value="👑 Patron(e)" selected>👑 Patron(e)</option>
                     <option value="🤝 Co-Patron(e)">🤝 Co-Patron(e)</option>
                     <option value="Référent">🔍 Référent de Secteur</option>
-                    <option value="👑 Fondateur">👑 Fondateur (SuperAdmin)</option>
                   </select>
                 </div>
                 <div class="form-group flex-1" style="margin-bottom: 0;">
@@ -975,49 +974,23 @@
                 <button type="button" class="btn-preset-role" data-status="👑 Patron(e)" data-ent="🦄 Unicorn">👑 Patron(e) Unicorn</button>
                 <button type="button" class="btn-preset-role" data-status="Référent" data-ent="🚘 Secteur Automobile">🚘 Référent Automobile</button>
                 <button type="button" class="btn-preset-role" data-status="Référent" data-ent="🏛️ Service Public">🏛️ Référent Services Publics</button>
-                <button type="button" class="btn-preset-role" data-status="👑 Fondateur" data-ent="">👑 Fondateur Suprême</button>
               </div>
             </div>
           </div>
 
           <div style="text-align: center; margin: 16px 0; position: relative;">
-            <span style="background: var(--bg-surface); padding: 0 10px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Ou connexion classique</span>
+            <span style="background: var(--bg-surface); padding: 0 10px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Connexion Réservée (Staff / Fondateur)</span>
           </div>
 
           <form id="formLogin">
           <div class="form-group">
             <label for="loginUsername" class="form-label">Identifiant :</label>
-            <input type="text" id="loginUsername" class="form-input" placeholder="Ex: fondateur ou ref_auto" required />
+            <input type="text" id="loginUsername" class="form-input" placeholder="Ex: fondateur" required />
           </div>
 
           <div class="form-group">
             <label for="loginPassword" class="form-label">Mot de passe :</label>
             <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required />
-          </div>
-
-          <!-- Quick 1-Click Access for Instant Demo -->
-          <div class="quick-login-box">
-            <span class="quick-login-title"><i class="fa-solid fa-bolt"></i> Accès Rapide / Démonstration :</span>
-            <div class="quick-login-grid">
-              <button type="button" class="btn-quick-login gold-border" data-user="fondateur" data-pass="admin">
-                <i class="fa-solid fa-crown text-gold"></i> Fondateur
-              </button>
-              <button type="button" class="btn-quick-login blue-border" data-user="ref_services" data-pass="pass">
-                <i class="fa-solid fa-shield-halved text-blue"></i> Réf. Services Publics
-              </button>
-              <button type="button" class="btn-quick-login red-border" data-user="ref_auto" data-pass="pass">
-                <i class="fa-solid fa-car-side text-red"></i> Réf. Automobile
-              </button>
-              <button type="button" class="btn-quick-login pink-border" data-user="ref_evenementiel" data-pass="pass">
-                <i class="fa-solid fa-champagne-glasses text-pink"></i> Réf. Événementiel
-              </button>
-              <button type="button" class="btn-quick-login green-border" data-user="ref_public_prive" data-pass="pass">
-                <i class="fa-solid fa-building-columns text-green"></i> Réf. Publics & Privés
-              </button>
-              <button type="button" class="btn-quick-login amber-border" data-user="ref_alimentaire" data-pass="pass">
-                <i class="fa-solid fa-burger text-amber"></i> Réf. Alimentaire
-              </button>
-            </div>
           </div>
 
           <div class="modal-footer">

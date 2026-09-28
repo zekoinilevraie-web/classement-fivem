@@ -233,6 +233,15 @@ app.post('/api/auth/discord/simulate', (req, res) => {
     return res.status(400).json({ error: 'Rôle Discord requis pour la simulation' });
   }
 
+  // Prevent simulating Fondateur or Admin publicly
+  const hasForbidden = rolesToTest.some(r => {
+    const nr = r.toLowerCase();
+    return nr.includes('fondateur') || nr.includes('staff') || nr.includes('admin');
+  });
+  if (hasForbidden && (!req.user || req.user.role !== 'fondateur')) {
+    return res.status(403).json({ error: 'Le rôle Fondateur ne peut pas être simulé publiquement' });
+  }
+
   const roleLabel = rolesToTest.join(' + ');
   const simulatedDiscordUser = {
     id: discordId || 'sim_' + Date.now(),
