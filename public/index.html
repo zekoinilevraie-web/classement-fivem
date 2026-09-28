@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portail des Entreprises - Classement & Bilans Hebdomadaires</title>
+  <!-- Google Fonts: Unbounded, Space Grotesk & Plus Jakarta Sans (Premium Dark Gaming DA) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@500;600;700&family=Unbounded:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    
+    <!-- Top Founder Simulation Banner (Only shown if user is Fondateur) -->
+    <aside id="founderSimBar" class="founder-sim-bar hidden" aria-label="Simulateur de rôle">
+      <div class="sim-inner">
+        <span class="sim-badge"><i class="fa-solid fa-shield"></i> MODE FONDATEUR</span>
+        <span class="sim-label">// Vue cloisonnée simulée :</span>
+        <div class="sim-buttons">
+          <button class="sim-btn" data-role="fondateur" id="simRoleFondateur"><i class="fa-solid fa-crown"></i> SuperAdmin (Tous)</button>
+          <button class="sim-btn" data-role="services_publics" id="simRoleServices"><i class="fa-solid fa-shield-halved"></i> Services Publics</button>
+          <button class="sim-btn" data-role="automobile" id="simRoleAuto"><i class="fa-solid fa-car-side"></i> Automobile</button>
+          <button class="sim-btn" data-role="evenementiel" id="simRoleEvenementiel"><i class="fa-solid fa-champagne-glasses"></i> Événementiel</button>
+          <button class="sim-btn" data-role="public_prive" id="simRolePublicPrive"><i class="fa-solid fa-building-columns"></i> Publics & Privés</button>
+          <button class="sim-btn" data-role="alimentaire" id="simRoleAlimentaire"><i class="fa-solid fa-burger"></i> Alimentaire</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Header Navigation -->
+    <header class="main-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-shield">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <div class="brand-titles">
+            <span class="brand-city">// LOS SANTOS EXECUTIVE</span>
+            <h1 class="brand-name">PORTAIL DES ENTREPRISES</h1>
+            <span class="brand-sub">Classement & Suivi Financier Hebdomadaire</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Week Selector Dropdown -->
+        <div class="week-picker-box">
+          <span class="picker-label">// SEMAINE</span>
+          <select id="weekSelect" class="form-select week-select">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Action Buttons -->
+        <button id="btnDiscordLoginTop" class="btn btn-discord btn-sm">
+          <i class="fa-brands fa-discord"></i> Vérification Discord
+        </button>
+
+        <button id="btnNewReport" class="btn btn-primary pulse-btn">
+          <i class="fa-solid fa-plus"></i> Déposer un Bilan
+        </button>
+
+        <button id="btnAdminPanel" class="btn btn-founder hidden">
+          <i class="fa-solid fa-sliders"></i> Console Fondateur
+        </button>
+
+        <!-- User profile pill -->
+        <div class="user-pill-dropdown">
+          <div id="userPill" class="user-pill">
+            <div class="user-avatar" id="userAvatar">👑</div>
+            <div class="user-info">
+              <span class="user-name" id="userDisplayName">Fondateur</span>
+              <span class="user-role-badge" id="userRoleBadge">SuperAdmin</span>
+            </div>
+            <i class="fa-solid fa-chevron-down pill-arrow"></i>
+          </div>
+          <div id="userDropdownMenu" class="user-dropdown-menu hidden">
+            <div class="dropdown-header">
+              <span id="dropdownUsername">fondateur</span>
+              <small id="dropdownAccess">Accès : Tout le serveur</small>
+            </div>
+            <button id="btnSwitchAccount" class="dropdown-item">
+              <i class="fa-solid fa-right-left"></i> Changer de compte
+            </button>
+            <button id="btnLogout" class="dropdown-item text-danger">
+              <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Discord Status & Verified Lead Banner -->
+    <div id="discordStatusBanner" class="discord-notice hidden">
+      <div class="notice-icon discord-icon-bg"><i class="fa-brands fa-discord"></i></div>
+      <div class="notice-text">
+        <span class="notice-tag">// ENCLAVE DISCORD VÉRIFIÉE</span>
+        <div class="notice-desc">Connecté avec succès : rôle détecté <span id="discordRoleNotice" class="badge-cat">Lead SASP</span>. Accès exclusif déverrouillé pour votre structure et vos bénéfices nets.</div>
+      </div>
+    </div>
+
+    <!-- Role Status Notice / Cloisonnement Banner -->
+    <div id="categoryIsolationNotice" class="category-notice hidden">
+      <div class="notice-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="notice-text">
+        <span class="notice-tag">// SECTEUR CLOISONNÉ</span>
+        <div class="notice-desc">Restriction de sécurité active : vous opérez sous le secteur <span id="isolatedCategoryName" class="badge-cat">Automobile</span>. Les autres divisions demeurent confidentielles.</div>
+      </div>
+    </div>
+
+    <!-- Category Tabs Navigation (Dynamically restricted per user) -->
+    <nav class="category-nav-bar" id="categoryNavBar">
+      <div class="cat-tabs-scroll" id="categoryTabsContainer">
+        <!-- Generated via JS according to user permissions -->
+      </div>
+    </nav>
+
+    <!-- Main Content Body -->
+    <main class="main-content">
+
+      <!-- Executive Hero Banner -->
+      <section class="executive-hero">
+        <div class="hero-bg-wrapper">
+          <img src="img/hero-cinematic.jpg" alt="Los Santos Corporate Night Skyline" class="hero-bg-img" />
+          <div class="hero-gradient-overlay"></div>
+          <div class="hero-noise-overlay"></div>
+        </div>
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            <span class="badge-text">// HAUTE COMMISSION ÉCONOMIQUE DE LOS SANTOS</span>
+          </div>
+          <h2 class="hero-headline">REGISTRE DES ENTREPRISES & CLASSEMENT FISCAL</h2>
+          <p class="hero-subline">Centralisation des flux financiers, bénéfices nets déclarés, effectifs salariés et temps forts des 38 entités corporatives.</p>
+          <div class="hero-tags">
+            <span class="hero-tag"><span class="tag-bullet bullet-blue"></span> 01 // Services Publics</span>
+            <span class="hero-tag"><span class="tag-bullet bullet-orange"></span> 02 // Automobile</span>
+            <span class="hero-tag"><span class="tag-bullet bullet-pink"></span> 03 // Événementiel</span>
+            <span class="hero-tag"><span class="tag-bullet bullet-green"></span> 04 // Publics & Privés</span>
+            <span class="hero-tag"><span class="tag-bullet bullet-amber"></span> 05 // Alimentaire</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Top Overview Stats (4 Cards) -->
+      <section class="stats-overview-grid">
+        <div class="stat-card gold-glow">
+          <div class="stat-icon-wrapper gold-bg">
+            <i class="fa-solid fa-sack-dollar"></i>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Chiffre d'Affaires Déclaré</span>
+            <div class="stat-value" id="statTotalCA">0 $</div>
+            <span class="stat-hint" id="statCAHint">Total cumulé cette semaine</span>
+          </div>
+        </div>
+
+        <div class="stat-card blue-glow">
+          <div class="stat-icon-wrapper blue-bg">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Citoyens Employés</span>
+            <div class="stat-value" id="statTotalEmployees">0</div>
+            <span class="stat-hint">Effectif total dans les entreprises</span>
+          </div>
+        </div>
+
+        <div class="stat-card pink-glow">
+          <div class="stat-icon-wrapper pink-bg">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Événements Réalisés</span>
+            <div class="stat-value" id="statTotalEvents">0</div>
+            <span class="stat-hint">Animations, soirées, rassemblements</span>
+          </div>
+        </div>
+
+        <div class="stat-card green-glow">
+          <div class="stat-icon-wrapper green-bg">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <div class="stat-details">
+            <span class="stat-title">Bilans Transmis</span>
+            <div class="stat-value" id="statReportsCount">0 / 0</div>
+            <span class="stat-hint">Entreprises ayant déposé leur fiche</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Podium des 3 Meilleures Entreprises -->
+      <section class="podium-section" id="podiumSection">
+        <div class="section-header">
+          <div class="header-title-group">
+            <span class="section-tag"><i class="fa-solid fa-award"></i> PALMARÈS DE LA SEMAINE</span>
+            <h2 class="section-title">Podium d'Honneur des Entreprises</h2>
+            <p class="section-subtitle">Félicitations aux structures les plus performantes et actives de la semaine !</p>
+          </div>
+          <div class="podium-actions">
+            <button id="btnExportDiscordQuick" class="btn btn-discord btn-sm">
+              <i class="fa-brands fa-discord"></i> Exporter pour Discord
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D Podium Container -->
+        <div class="podium-container" id="podiumContainer">
+          <!-- Populated dynamically: 2nd place, 1st place, 3rd place -->
+        </div>
+      </section>
+
+      <!-- Section: Classement Complet & Filtres -->
+      <section class="ranking-section">
+        <div class="ranking-toolbar">
+          <div class="toolbar-left">
+            <h3 class="ranking-heading" id="rankingHeading">
+              <i class="fa-solid fa-ranking-star text-gold"></i> Classement Général des Entreprises
+            </h3>
+            <span class="ranking-count" id="rankingCountBadge">38 Entreprises</span>
+          </div>
+
+          <div class="toolbar-right">
+            <!-- Search Input -->
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="searchInput" placeholder="Rechercher une entreprise, un patron..." />
+              <button id="clearSearch" class="btn-clear hidden">&times;</button>
+            </div>
+
+            <!-- Sort By Select -->
+            <div class="sort-box">
+              <label for="sortSelect"><i class="fa-solid fa-arrow-down-wide-short"></i> Trier par :</label>
+              <select id="sortSelect" class="form-select">
+                <option value="ca_desc">Chiffre d'Affaires (Décroissant)</option>
+                <option value="events_desc">Nombre d'Événements (Plus actifs)</option>
+                <option value="employees_desc">Nombre d'Employés (Effectif)</option>
+                <option value="name_asc">Nom de l'Entreprise (A-Z)</option>
+              </select>
+            </div>
+
+            <!-- View Toggle (Grid / List) -->
+            <div class="view-toggle">
+              <button id="btnViewGrid" class="toggle-btn active" title="Vue Cartes"><i class="fa-solid fa-border-all"></i></button>
+              <button id="btnViewTable" class="toggle-btn" title="Vue Tableau"><i class="fa-solid fa-list"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enterprises Grid View -->
+        <div id="enterprisesGrid" class="enterprises-grid">
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Enterprises Table View (hidden by default) -->
+        <div id="enterprisesTableContainer" class="enterprises-table-container hidden">
+          <table class="enterprises-table">
+            <thead>
+              <tr>
+                <th style="width: 60px;">Rang</th>
+                <th>Entreprise</th>
+                <th>Secteur / Catégorie</th>
+                <th>Patron / Direction</th>
+                <th>Effectif</th>
+                <th>Chiffre d'Affaires</th>
+                <th>Bénéfice Net</th>
+                <th>Événements</th>
+                <th>Distinction & Message</th>
+                <th style="width: 140px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="enterprisesTableBody">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: Événements Organisés Cette Semaine -->
+      <section class="events-feed-section" id="eventsSection">
+        <div class="section-header">
+          <div class="header-title-group">
+            <span class="section-tag tag-pink"><i class="fa-solid fa-champagne-glasses"></i> DYNAMISME & ACTIVITÉ</span>
+            <h2 class="section-title">Les Temps Forts & Événements de la Semaine</h2>
+            <p class="section-subtitle">Soirées, concours, rassemblements, ventes et opérations citoyennes organisés à Los Santos.</p>
+          </div>
+        </div>
+        <div class="events-grid" id="eventsFeedContainer">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <div class="footer-left">
+          <div class="footer-brand">
+            <i class="fa-solid fa-crown text-gold"></i> Portail Officiel de la Gouvernance & du Fondateur
+          </div>
+          <p>Système de gestion et de récompense de l'activité économique de Los Santos.</p>
+        </div>
+        <div class="footer-right">
+          <span>Développé pour la communauté &bull; Système sécurisé par isolation de rôle</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- MODAL 1: Déposer / Modifier un Bilan Hebdomadaire -->
+    <div id="modalReport" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-file-invoice-dollar text-gold modal-icon"></i>
+            <div>
+              <h3 class="modal-title" id="reportModalTitle">Déclarer le Bilan de Fin de Semaine</h3>
+              <p class="modal-subtitle">Renseignez le chiffre d'affaires, le personnel et les événements réalisés.</p>
+            </div>
+          </div>
+          <button class="modal-close" data-close="modalReport">&times;</button>
+        </div>
+
+        <form id="formWeeklyReport" class="modal-body">
+          <input type="hidden" id="reportId" />
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="reportEnterpriseSelect" class="form-label required">Entreprise concernée :</label>
+              <select id="reportEnterpriseSelect" class="form-select" required>
+                <!-- Populated dynamically according to user category permissions -->
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="reportWeekDisplay" class="form-label">Semaine :</label>
+              <input type="text" id="reportWeekDisplay" class="form-input" readonly />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="reportTurnover" class="form-label required">Chiffre d'Affaires de fin de semaine ($) :</label>
+              <div class="input-with-icon">
+                <span class="input-icon">$</span>
+                <input type="number" id="reportTurnover" class="form-input" placeholder="Ex: 1500000" min="0" required />
+              </div>
+              <small class="form-help">Total généré sur l'ensemble de la semaine.</small>
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="reportEmployees" class="form-label required">Nombre d'employés dans l'entreprise :</label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-users input-icon"></i>
+                <input type="number" id="reportEmployees" class="form-input" placeholder="Ex: 12" min="1" required />
+              </div>
+              <small class="form-help">Salariés actifs déclarés au registre.</small>
+            </div>
+          </div>
+
+          <!-- Financial Breakdown: Expenses & Net Profit -->
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="reportExpenses" class="form-label">Charges & Salaires versés ($) :</label>
+              <div class="input-with-icon">
+                <span class="input-icon"><i class="fa-solid fa-receipt"></i></span>
+                <input type="number" id="reportExpenses" class="form-input" placeholder="Ex: 450000" min="0" />
+              </div>
+              <small class="form-help">Approvisionnements, salaires et frais de gestion.</small>
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="reportNetProfit" class="form-label">Bénéfice Net Dégagé ($) :</label>
+              <div class="input-with-icon">
+                <span class="input-icon"><i class="fa-solid fa-chart-line text-green"></i></span>
+                <input type="number" id="reportNetProfit" class="form-input" placeholder="Calcul automatique (CA - Charges)" />
+              </div>
+              <small class="form-help text-green" id="profitPreviewHelp">Marge nette estimée : 0 %</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reportBossName" class="form-label required">Nom du Patron / Co-Patrons :</label>
+            <input type="text" id="reportBossName" class="form-input" placeholder="Ex: Dominic Toretto & Brian O'Conner" required />
+          </div>
+
+          <!-- Dynamic Events Builder -->
+          <div class="events-builder-box">
+            <div class="events-builder-header">
+              <div>
+                <label class="form-label"><i class="fa-solid fa-calendar-days text-pink"></i> Événements réalisés cette semaine :</label>
+                <span class="builder-count" id="eventCountBadge">0 événement(s)</span>
+              </div>
+              <button type="button" id="btnAddEventRow" class="btn btn-sm btn-outline-pink">
+                <i class="fa-solid fa-plus"></i> Ajouter un événement
+              </button>
+            </div>
+            <div id="eventsBuilderList" class="events-builder-list">
+              <!-- Dynamically added event items -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reportNotes" class="form-label">Remarques / Bilan d'activité de la semaine :</label>
+            <textarea id="reportNotes" class="form-textarea" rows="3" placeholder="Faits marquants, réussites, partenariats, investissements, difficultés rencontrées..."></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close="modalReport">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitReport">
+              <i class="fa-solid fa-paper-plane"></i> Enregistrer & Transmettre le Bilan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 2: Dossier Complet Entreprise & Détails -->
+    <div id="modalDetails" class="modal-overlay hidden">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <div class="modal-title-group" id="detailsHeaderGroup">
+            <!-- Populated via JS -->
+          </div>
+          <button class="modal-close" data-close="modalDetails">&times;</button>
+        </div>
+
+        <div class="modal-body" id="detailsModalBody">
+          <!-- Populated via JS -->
+        </div>
+
+        <div class="modal-footer" id="detailsModalFooter">
+          <!-- Action buttons (Edit, Award, Close) -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: Félicitations & Distinctions du Fondateur -->
+    <div id="modalAward" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-medal text-gold modal-icon"></i>
+            <div>
+              <h3 class="modal-title">Décerner une Distinction du Fondateur</h3>
+              <p class="modal-subtitle" id="awardModalTargetName">Félicitez l'entreprise pour ses résultats et son activité.</p>
+            </div>
+          </div>
+          <button class="modal-close" data-close="modalAward">&times;</button>
+        </div>
+
+        <form id="formAward" class="modal-body">
+          <input type="hidden" id="awardReportId" />
+
+          <div class="form-group">
+            <label for="awardBadgeSelect" class="form-label">Titre Honorifique / Médaille :</label>
+            <select id="awardBadgeSelect" class="form-select">
+              <option value="🏆 Entreprise de la Semaine">🏆 Entreprise de la Semaine (Palme d'Or)</option>
+              <option value="💎 Top Chiffre d'Affaires">💎 Top Chiffre d'Affaires (Record Économique)</option>
+              <option value="⚡ Événement d'Or">⚡ Événement d'Or (Meilleure Animation)</option>
+              <option value="🛡️ Dévouement Exemplaire">🛡️ Dévouement Exemplaire (Service Public)</option>
+              <option value="👥 Top Recruteur de la Ville">👥 Top Recruteur de la Ville (Plus gros effectif)</option>
+              <option value="⭐ Étoile Montante">⭐ Étoile Montante (Plus forte progression)</option>
+              <option value="🥇 Leader Mécanique">🥇 Leader Mécanique</option>
+              <option value="🍔 Roi de la Restauration">🍔 Roi de la Restauration</option>
+              <option value="💼 Rigueur & Sécurité">💼 Rigueur & Sécurité</option>
+              <option value="custom">✏️ Titre personnalisé...</option>
+            </select>
+          </div>
+
+          <div class="form-group hidden" id="customBadgeGroup">
+            <label for="customBadgeInput" class="form-label">Titre personnalisé :</label>
+            <input type="text" id="customBadgeInput" class="form-input" placeholder="Ex: 🌟 Prix Spécial du Gouvernement" />
+          </div>
+
+          <div class="form-group">
+            <label for="awardComment" class="form-label">Mot officiel de félicitations du Fondateur :</label>
+            <textarea id="awardComment" class="form-textarea" rows="4" placeholder="Ex: Un travail formidable cette semaine, toute la ville salue votre engagement et vos animations au top ! Continuez ainsi."></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close="modalAward">Annuler</button>
+            <button type="submit" class="btn btn-gold">
+              <i class="fa-solid fa-crown"></i> Attribuer la Médaille & le Message
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 4: Panel d'Administration & Gestion des Rôles (Fondateur Only) -->
+    <div id="modalAdmin" class="modal-overlay hidden">
+      <div class="modal-card modal-xl">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-crown text-gold modal-icon"></i>
+            <div>
+              <h3 class="modal-title">Panel Fondateur & Gestion des Rôles</h3>
+              <p class="modal-subtitle">Gérez les comptes référents, le cloisonnement des catégories et les semaines.</p>
+            </div>
+          </div>
+          <button class="modal-close" data-close="modalAdmin">&times;</button>
+        </div>
+
+        <div class="admin-tab-nav">
+          <button class="admin-tab-btn active" data-tab="tabUsers"><i class="fa-solid fa-users-gear"></i> Référents & Attribution des Rôles</button>
+          <button class="admin-tab-btn" data-tab="tabWeeks"><i class="fa-solid fa-calendar-plus"></i> Gestion des Semaines</button>
+          <button class="admin-tab-btn" data-tab="tabEnterprises"><i class="fa-solid fa-building"></i> Entreprises de la Ville</button>
+          <button class="admin-tab-btn" data-tab="tabDiscord"><i class="fa-brands fa-discord"></i> Export Discord Officiel</button>
+          <button class="admin-tab-btn" data-tab="tabDiscordOAuth"><i class="fa-brands fa-discord text-blue"></i> Discord OAuth & Rôles</button>
+        </div>
+
+        <div class="modal-body admin-modal-body">
+          <!-- TAB 1: Gestion des Utilisateurs et Rôles -->
+          <div id="tabUsers" class="admin-tab-panel active">
+            <div class="admin-panel-top">
+              <div>
+                <h4>Comptes d'Accès & Cloisonnement des Catégories</h4>
+                <p class="text-muted">Chaque référent accède uniquement à sa catégorie et ne voit pas les autres.</p>
+              </div>
+              <button id="btnOpenNewUserForm" class="btn btn-sm btn-primary">
+                <i class="fa-solid fa-user-plus"></i> Créer un nouveau compte
+              </button>
+            </div>
+
+            <!-- New/Edit User Form (Toggled) -->
+            <form id="formUser" class="card-glass-form p-3 mb-3 hidden">
+              <input type="hidden" id="adminUserId" />
+              <h5 id="formUserTitle">Nouveau Référent / Accès</h5>
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label class="form-label required">Identifiant (Login) :</label>
+                  <input type="text" id="adminUsername" class="form-input" required />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label required">Nom affiché :</label>
+                  <input type="text" id="adminDisplayName" class="form-input" required />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label required">Mot de passe :</label>
+                  <input type="password" id="adminPassword" class="form-input" placeholder="Laissez vide pour conserver" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label class="form-label required">Rôle attribué :</label>
+                  <select id="adminRoleSelect" class="form-select">
+                    <option value="referent">Référent de Catégorie (Cloisonné)</option>
+                    <option value="fondateur">Fondateur (Accès Total Suprême)</option>
+                    <option value="patron">Patron d'une seule entreprise</option>
+                  </select>
+                </div>
+                <div class="form-group flex-1" id="adminCategoryGroup">
+                  <label class="form-label required">Catégorie autorisée :</label>
+                  <select id="adminCategorySelect" class="form-select">
+                    <option value="services_publics">Services Publics</option>
+                    <option value="automobile">Automobile</option>
+                    <option value="evenementiel">Événementiel</option>
+                    <option value="public_prive">Publics & Privés</option>
+                    <option value="alimentaire">Alimentaire</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions-right">
+                <button type="button" class="btn btn-sm btn-secondary" id="btnCancelUserForm">Annuler</button>
+                <button type="submit" class="btn btn-sm btn-primary">Enregistrer le compte</button>
+              </div>
+            </form>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Identifiant</th>
+                    <th>Nom affiché</th>
+                    <th>Rôle</th>
+                    <th>Catégorie Cloisonnée</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 2: Gestion des Semaines -->
+          <div id="tabWeeks" class="admin-tab-panel hidden">
+            <div class="admin-panel-top">
+              <div>
+                <h4>Semaines de Bilan</h4>
+                <p class="text-muted">Créez de nouvelles semaines pour réinitialiser les bilans ou changer de période.</p>
+              </div>
+            </div>
+
+            <form id="formNewWeek" class="card-glass-form p-3 mb-3">
+              <h5>Ouvrir une nouvelle semaine de classement</h5>
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label class="form-label required">Titre de la Semaine :</label>
+                  <input type="text" id="newWeekTitle" class="form-input" placeholder="Ex: Semaine 40 - Octobre 2026" required />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label">Date Début :</label>
+                  <input type="date" id="newWeekStart" class="form-input" />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label">Date Fin :</label>
+                  <input type="date" id="newWeekEnd" class="form-input" />
+                </div>
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-plus"></i> Créer et Activer la Semaine</button>
+            </form>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Titre</th>
+                    <th>Période</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminWeeksTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 3: Entreprises de la Ville -->
+          <div id="tabEnterprises" class="admin-tab-panel hidden">
+            <div class="admin-panel-top">
+              <div>
+                <h4>Répertoire des 38 Entreprises</h4>
+                <p class="text-muted">Ajoutez une nouvelle entreprise si une ouverture a lieu en ville.</p>
+              </div>
+            </div>
+
+            <form id="formNewEnterprise" class="card-glass-form p-3 mb-3">
+              <h5>Ajouter une nouvelle entreprise</h5>
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label class="form-label required">Nom de l'entreprise :</label>
+                  <input type="text" id="newEntName" class="form-input" placeholder="Ex: Vanilla Ice Cream" required />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label required">Catégorie :</label>
+                  <select id="newEntCategory" class="form-select" required>
+                    <option value="services_publics">Services Publics</option>
+                    <option value="automobile">Automobile</option>
+                    <option value="evenementiel">Événementiel</option>
+                    <option value="public_prive">Publics & Privés</option>
+                    <option value="alimentaire">Alimentaire</option>
+                  </select>
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label">Patron par défaut :</label>
+                  <input type="text" id="newEntBoss" class="form-input" placeholder="Ex: Jean Dupont" />
+                </div>
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-plus"></i> Ajouter l'entreprise</button>
+            </form>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Patron par défaut</th>
+                  </tr>
+                </thead>
+                <tbody id="adminEnterprisesTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 4: Export Discord -->
+          <div id="tabDiscord" class="admin-tab-panel hidden">
+            <div class="admin-panel-top">
+              <div>
+                <h4>Générateur d'Annonce Discord RP</h4>
+                <p class="text-muted">Copiez en 1 clic l'annonce complète prête à être postée dans votre salon #annonces-entreprises.</p>
+              </div>
+              <button id="btnCopyDiscord" class="btn btn-discord btn-sm">
+                <i class="fa-regular fa-copy"></i> Copier l'annonce Discord
+              </button>
+            </div>
+            <textarea id="discordExportText" class="discord-preview-box" readonly rows="16"></textarea>
+          </div>
+
+          <!-- TAB 5: Discord OAuth & Rôles -->
+          <div id="tabDiscordOAuth" class="admin-tab-panel hidden">
+            <div class="admin-panel-top">
+              <div>
+                <h4>Configuration Discord OAuth2 & Attribution Automatique</h4>
+                <p class="text-muted">Associez les rôles Discord de votre serveur (ex: "Lead SASP", "Lead Unicorn") à leurs entreprises et bénéfices.</p>
+              </div>
+              <button id="btnOpenNewMappingForm" class="btn btn-sm btn-primary">
+                <i class="fa-solid fa-plus"></i> Nouveau Mapping Rôle Discord
+              </button>
+            </div>
+
+            <!-- Discord API Credentials Form -->
+            <form id="formDiscordConfig" class="card-glass-form p-3 mb-3">
+              <h5>Paramètres API Discord Developer Application</h5>
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label class="form-label">Client ID :</label>
+                  <input type="text" id="cfgDiscordClientId" class="form-input" placeholder="Ex: 123456789012345678" />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label">Client Secret :</label>
+                  <input type="password" id="cfgDiscordClientSecret" class="form-input" placeholder="••••••••••••••••" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label class="form-label">ID du Serveur Discord (Guild ID) :</label>
+                  <input type="text" id="cfgDiscordGuildId" class="form-input" placeholder="Ex: 987654321098765432" />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label">Bot Token (Recommandé pour lire les rôles) :</label>
+                  <input type="password" id="cfgDiscordBotToken" class="form-input" placeholder="Bot Token Discord" />
+                </div>
+              </div>
+              <div class="form-actions-right">
+                <button type="submit" class="btn btn-sm btn-discord"><i class="fa-solid fa-floppy-disk"></i> Enregistrer les clés Discord</button>
+              </div>
+            </form>
+
+            <!-- New Discord Mapping Form (Toggled) -->
+            <form id="formDiscordMapping" class="card-glass-form p-3 mb-3 hidden">
+              <input type="hidden" id="mappingId" />
+              <h5>Ajouter ou Modifier une Correspondance de Rôle Discord</h5>
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label class="form-label required">Nom exact du rôle sur Discord :</label>
+                  <input type="text" id="mapDiscordRoleName" class="form-input" placeholder="Ex: Lead SASP, Lead Burger Shot, Fondateur..." required />
+                  <small class="form-help">Doit correspondre au rôle attribué sur votre serveur Discord.</small>
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label required">Type d'accès conféré :</label>
+                  <select id="mapRoleType" class="form-select">
+                    <option value="patron">Patron d'Entreprise (Accès à son entreprise & bénéfices)</option>
+                    <option value="referent">Référent de Secteur (Toute la catégorie)</option>
+                    <option value="fondateur">Fondateur (Accès Total SuperAdmin)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group flex-1" id="mapEnterpriseGroup">
+                  <label class="form-label required">Entreprise attribuée :</label>
+                  <select id="mapEnterpriseSelect" class="form-select">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+                <div class="form-group flex-1" id="mapCategoryGroup">
+                  <label class="form-label required">Catégorie associée :</label>
+                  <select id="mapCategorySelect" class="form-select">
+                    <option value="services_publics">Services Publics</option>
+                    <option value="automobile">Automobile</option>
+                    <option value="evenementiel">Événementiel</option>
+                    <option value="public_prive">Publics & Privés</option>
+                    <option value="alimentaire">Alimentaire</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions-right">
+                <button type="button" class="btn btn-sm btn-secondary" id="btnCancelMappingForm">Annuler</button>
+                <button type="submit" class="btn btn-sm btn-primary">Enregistrer la règle</button>
+              </div>
+            </form>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Rôle Discord Requis</th>
+                    <th>Statut Octroyé</th>
+                    <th>Entreprise Débloquée</th>
+                    <th>Catégorie</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminDiscordMappingsTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Lier son Entreprise pour les membres Discord sans Bot -->
+    <div id="modalClaimEnterprise" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-brands fa-discord text-blue modal-icon"></i>
+            <div>
+              <h3 class="modal-title">Lier votre Entreprise Discord</h3>
+              <p class="modal-subtitle">Votre compte est vérifié sur le serveur Discord. Choisissez votre structure :</p>
+            </div>
+          </div>
+          <button class="modal-close" data-close="modalClaimEnterprise">&times;</button>
+        </div>
+
+        <form id="formClaimEnterprise" class="modal-body">
+          <div class="form-group">
+            <label class="form-label required">1. Votre statut dans l'entreprise :</label>
+            <select id="claimStatusSelect" class="form-select" required>
+              <option value="👑 Patron(e)">👑 Patron(e) Principal</option>
+              <option value="🤝 Co-Patron(e)">🤝 Co-Patron(e) / Associé</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">2. Votre Entreprise :</label>
+            <select id="claimEnterpriseSelect" class="form-select" required>
+              <!-- Filled via JS or preset list -->
+            </select>
+            <small class="form-help">Cette liaison débloquera votre tableau de bord financier et vos bilans.</small>
+          </div>
+
+          <div class="modal-footer" style="padding: 16px 0 0 0;">
+            <button type="button" class="btn btn-secondary" data-close="modalClaimEnterprise">Annuler</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i> Confirmer & Débloquer mes Bénéfices
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 5: Connexion / Changement de Compte -->
+    <div id="modalLogin" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i class="fa-solid fa-shield-halved text-gold modal-icon"></i>
+            <div>
+              <h3 class="modal-title">Connexion & Vérification Discord</h3>
+              <p class="modal-subtitle">Connectez-vous via Discord ou par vos identifiants réservés.</p>
+            </div>
+          </div>
+          <button class="modal-close" data-close="modalLogin">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Discord OAuth Verification Box -->
+          <div class="discord-oauth-card mb-3" style="background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.3); border-radius: var(--radius-sm); padding: 18px;">
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+              <div style="width: 40px; height: 40px; border-radius: var(--radius-xs); background: #5865F2; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff; flex-shrink: 0;">
+                <i class="fa-brands fa-discord"></i>
+              </div>
+              <div>
+                <h4 style="color: #fff; margin-bottom: 2px; font-size: 0.95rem; font-family: var(--font-display); font-weight: 700;">AUTHENTIFICATION DISCORD OAUTH2</h4>
+                <p style="font-size: 0.78rem; color: #999999; margin: 0; line-height: 1.4;">
+                  Association automatique : le joueur cumule le rôle <strong>👑 Patron(e)</strong> ou <strong>🤝 Co-Patron(e)</strong> avec le rôle de son entreprise (ex: <strong>👮 SASP</strong>, <strong>🏎️ Concess Auto</strong>) pour débloquer sa fiche et ses bénéfices.
+                </p>
+              </div>
+            </div>
+            
+            <button type="button" id="btnConnectDiscordOAuth" class="btn btn-discord" style="width: 100%; font-size: 0.85rem; padding: 10px;">
+              <i class="fa-brands fa-discord"></i> Connexion Officielle via Discord (OAuth2)
+            </button>
+
+            <!-- Instant Discord Role Simulator (Dual Roles: Status + Enterprise) -->
+            <div class="discord-sim-box" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xs); padding: 14px; margin-top: 14px;">
+              <span style="font-size: 0.7rem; font-weight: 800; color: var(--accent); display: flex; align-items: center; gap: 6px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.08em;">
+                <i class="fa-solid fa-bolt"></i> Simulateur Direct : Cumul des rôles Discord de votre serveur
+              </span>
+
+              <!-- Dual Selectors: Status Role + Enterprise Role -->
+              <div class="form-row" style="margin-bottom: 10px;">
+                <div class="form-group flex-1" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.65rem;">1. Rôle Statut Discord :</label>
+                  <select id="discordSimStatusSelect" class="form-select" style="font-size: 0.78rem;">
+                    <option value="👑 Patron(e)" selected>👑 Patron(e)</option>
+                    <option value="🤝 Co-Patron(e)">🤝 Co-Patron(e)</option>
+                    <option value="Référent">🔍 Référent de Secteur</option>
+                    <option value="👑 Fondateur">👑 Fondateur (SuperAdmin)</option>
+                  </select>
+                </div>
+                <div class="form-group flex-1" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.65rem;">2. Rôle Entreprise Discord :</label>
+                  <select id="discordSimEnterpriseSelect" class="form-select" style="font-size: 0.78rem;">
+                    <!-- Services Publics -->
+                    <optgroup label="🏛️ Services Publics">
+                      <option value="👮 SASP" selected>👮 SASP</option>
+                      <option value="us Gouvernement">us Gouvernement</option>
+                      <option value="⚖️ DOJ">⚖️ DOJ</option>
+                      <option value="👨‍⚖️ Cabinet Avocat">👨‍⚖️ Cabinet Avocat</option>
+                      <option value="🥷 FBI">🥷 FBI</option>
+                      <option value="🚑 EMS">🚑 EMS</option>
+                      <option value="🏝️ · GOUVERNEMENT CAYO">🏝️ · GOUVERNEMENT CAYO</option>
+                      <option value="🪖 National Guard">🪖 National Guard</option>
+                    </optgroup>
+                    <!-- Automobile -->
+                    <optgroup label="🚘 Secteur Automobile">
+                      <option value="🏎️ Concess Auto">🏎️ Concess Auto</option>
+                      <option value="🔧 Reaper Custom">🔧 Reaper Custom</option>
+                      <option value="🔧 · 𝐋𝐒-𝐂𝐔𝐒𝐓𝐎𝐌">🔧 · 𝐋𝐒-𝐂𝐔𝐒𝐓𝐎𝐌</option>
+                      <option value="🔧 · CarClub">🔧 · CarClub</option>
+                      <option value="🔧 Flints Auto">🔧 Flints Auto</option>
+                      <option value="🛠️ Phoenix Custom">🛠️ Phoenix Custom</option>
+                      <option value="🚗 Mosleys">🚗 Mosleys</option>
+                      <option value="Car Club 76">Car Club 76</option>
+                    </optgroup>
+                    <!-- Publique - Privé -->
+                    <optgroup label="🏙️ Publique - Privé">
+                      <option value="👥 Groupe6">👥 Groupe6</option>
+                      <option value="📦 LS Postal">📦 LS Postal</option>
+                      <option value="📰 Weazel News">📰 Weazel News</option>
+                      <option value="🚬 Tabac">🚬 Tabac</option>
+                      <option value="🚕 Taxi">🚕 Taxi</option>
+                      <option value="💎 cuivre-industries">💎 cuivre-industries</option>
+                      <option value="🍇 Vigneron">🍇 Vigneron</option>
+                      <option value="📷 Studio Photo">📷 Studio Photo</option>
+                      <option value="⛏️ cayo ferraille">⛏️ cayo ferraille</option>
+                      <option value="🏢 Dynasty 8">🏢 Dynasty 8</option>
+                      <option value="⚓ · 𝐌𝐄𝐃𝐕𝐄𝐃𝐄𝐕-𝐌𝐀𝐑𝐈𝐓𝐈𝐌𝐄-&...">⚓ · 𝐌𝐄𝐃𝐕𝐄𝐃𝐄𝐕-𝐌𝐀𝐑𝐈𝐓𝐈𝐌𝐄-&...</option>
+                    </optgroup>
+                    <!-- Événementiel -->
+                    <optgroup label="🎭 Secteur Événementiel">
+                      <option value="🦄 Unicorn">🦄 Unicorn</option>
+                      <option value="🎸 Yellow Jack">🎸 Yellow Jack</option>
+                      <option value="🌴 Nocturnal">🌴 Nocturnal</option>
+                      <option value="🍹 Perico BAR">🍹 Perico BAR</option>
+                      <option value="💨 Hookah Club">💨 Hookah Club</option>
+                      <option value="🍸 Club 97">🍸 Club 97</option>
+                      <option value="🎵 Label 97">🎵 Label 97</option>
+                    </optgroup>
+                    <!-- Alimentaire -->
+                    <optgroup label="🍔 Secteur Alimentaire">
+                      <option value="🍔 Burger Shot">🍔 Burger Shot</option>
+                      <option value="🍕 Casa Bellini">🍕 Casa Bellini</option>
+                      <option value="☕ CatCafé">☕ CatCafé</option>
+                      <option value="🌿 LTD Little Seoul">🌿 LTD Little Seoul</option>
+                      <option value="🌿 LTD Forum Drive">🌿 LTD Forum Drive</option>
+                      <option value="🌿 LTD Groove Street">🌿 LTD Groove Street</option>
+                      <option value="🌿 LTD Mirror Park">🌿 LTD Mirror Park</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+
+              <button type="button" id="btnTestDiscordSim" class="btn btn-primary btn-sm" style="width: 100%;">
+                <i class="fa-solid fa-play"></i> Simuler la Connexion avec ces Rôles Discord
+              </button>
+
+              <!-- Quick Presets -->
+              <div style="margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;">
+                <span style="font-size: 0.65rem; color: var(--text-dim); display: block; width: 100%;">Exemples prêts à tester en 1 clic :</span>
+                <button type="button" class="btn-preset-role" data-status="👑 Patron(e)" data-ent="👮 SASP">👑 Patron(e) SASP</button>
+                <button type="button" class="btn-preset-role" data-status="👑 Patron(e)" data-ent="🏎️ Concess Auto">👑 Patron(e) Concess Auto</button>
+                <button type="button" class="btn-preset-role" data-status="🤝 Co-Patron(e)" data-ent="🔧 · 𝐋𝐒-𝐂𝐔𝐒𝐓𝐎𝐌">🤝 Co-Patron(e) LS-Custom</button>
+                <button type="button" class="btn-preset-role" data-status="👑 Patron(e)" data-ent="🍔 Burger Shot">👑 Patron(e) Burger Shot</button>
+                <button type="button" class="btn-preset-role" data-status="👑 Patron(e)" data-ent="🦄 Unicorn">👑 Patron(e) Unicorn</button>
+                <button type="button" class="btn-preset-role" data-status="Référent" data-ent="🚘 Secteur Automobile">🚘 Référent Automobile</button>
+                <button type="button" class="btn-preset-role" data-status="Référent" data-ent="🏛️ Service Public">🏛️ Référent Services Publics</button>
+                <button type="button" class="btn-preset-role" data-status="👑 Fondateur" data-ent="">👑 Fondateur Suprême</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin: 16px 0; position: relative;">
+            <span style="background: var(--bg-surface); padding: 0 10px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Ou connexion classique</span>
+          </div>
+
+          <form id="formLogin">
+          <div class="form-group">
+            <label for="loginUsername" class="form-label">Identifiant :</label>
+            <input type="text" id="loginUsername" class="form-input" placeholder="Ex: fondateur ou ref_auto" required />
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword" class="form-label">Mot de passe :</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required />
+          </div>
+
+          <!-- Quick 1-Click Access for Instant Demo -->
+          <div class="quick-login-box">
+            <span class="quick-login-title"><i class="fa-solid fa-bolt"></i> Accès Rapide / Démonstration :</span>
+            <div class="quick-login-grid">
+              <button type="button" class="btn-quick-login gold-border" data-user="fondateur" data-pass="admin">
+                <i class="fa-solid fa-crown text-gold"></i> Fondateur
+              </button>
+              <button type="button" class="btn-quick-login blue-border" data-user="ref_services" data-pass="pass">
+                <i class="fa-solid fa-shield-halved text-blue"></i> Réf. Services Publics
+              </button>
+              <button type="button" class="btn-quick-login red-border" data-user="ref_auto" data-pass="pass">
+                <i class="fa-solid fa-car-side text-red"></i> Réf. Automobile
+              </button>
+              <button type="button" class="btn-quick-login pink-border" data-user="ref_evenementiel" data-pass="pass">
+                <i class="fa-solid fa-champagne-glasses text-pink"></i> Réf. Événementiel
+              </button>
+              <button type="button" class="btn-quick-login green-border" data-user="ref_public_prive" data-pass="pass">
+                <i class="fa-solid fa-building-columns text-green"></i> Réf. Publics & Privés
+              </button>
+              <button type="button" class="btn-quick-login amber-border" data-user="ref_alimentaire" data-pass="pass">
+                <i class="fa-solid fa-burger text-amber"></i> Réf. Alimentaire
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close="modalLogin">Fermer</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-right-to-bracket"></i> Se Connecter
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
